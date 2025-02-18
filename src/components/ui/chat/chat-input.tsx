@@ -1,9 +1,9 @@
-import * as React from "react";
-import { Textarea } from "@/components/ui/textarea";
+import * as React from "react"; 
 import { cn } from "@/lib/utils";
+import { Input } from "../input";
 const ChatInput = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
   ({ className, ...props }, ref) => (
-    <Textarea
+    <Input
       autoComplete="off"
       ref={ref}
       name="message"
