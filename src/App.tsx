@@ -1,9 +1,12 @@
-import "./App.css"; 
+import "./App.css";
+import Layout from "./components/Layout";
 
 import AppRoutes from "./routes";
 
 export default function App() {
-  return <AppRoutes />;
+  return (
+    <Layout>
+      <AppRoutes />
+    </Layout>
+  );
 }
-
- 
