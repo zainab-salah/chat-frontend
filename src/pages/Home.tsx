@@ -6,8 +6,13 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper.tsx";
 import SignUpForm from "@/components/SignUpForm";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import useAuth from "@/hooks/useAuth";
 
 export default function Login() {
+  const { auth  } = useAuth();
+ 
+console.log("AuthContext: ", auth);
+
   return (
     <AnimatedDiv>
     <MaxWidthWrapper className="flex md:min-h-screen py-10 relative overflow-hidden md:overflow-visible h-full  items-center justify-center">
