@@ -41,6 +41,7 @@ const ChatRoom = () => {
   };
 
   return (
+    
     <div className="relative min-h-screen w-full h-full">
      <BackgroundGlow />
       <MaxWidthWrapper className="py-10 bg-white w-full flex  flex-col items-center justify-center relative">
