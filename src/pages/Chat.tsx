@@ -1,58 +1,84 @@
-import { ChatBubble , ChatBubbleAvatar, ChatBubbleMessage } from "@/components/ui/chat/chat-bubble";
+import {
+  ChatBubble,
+ 
+  ChatBubbleActionWrapper,
+  ChatBubbleAvatar,
+  ChatBubbleMessage,
+} from "@/components/ui/chat/chat-bubble";
+import { ChatInput } from "@/components/ui/chat/chat-input";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
+ 
+import { useState } from "react";
+import MaxWidthWrapper from "@/components/MaxWidthWrapper.tsx";
+import BackgroundGlow from "@/components/BackgroundGlow";
 
- 
- 
-const Chat = () => {
-  const messages = [
+const ChatRoom = () => {
+  const [messages, setMessages] = useState([
     {
       id: 1,
-      message: "Hello, how has your day been? I hope you are doing well.",
-      sender: "user",
-    },
-    {
-      id: 2,
-      message:
-        "Hi, I am doing well, thank you for asking. How can I help you today?",
+      message: "Welcome to the chat room! Feel free to talk.",
       sender: "bot",
     },
-    {
-      id: 3,
-      message: "",
-      sender: "bot",
-      isLoading: true,
-    },
-  ];
+  ]);
+  const [newMessage, setNewMessage] = useState("");
+
+  const sendMessage = () => {
+    if (newMessage.trim() !== "") {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { id: prevMessages.length + 1, message: newMessage, sender: "user" },
+      ]);
+      setNewMessage("");
+    }
+  };
+
+  const handleKeyDown = (event:{
+    key: string
+  }) => {
+    if (event.key === "Enter") {
+      sendMessage();
+    }
+  };
+
   return (
-    <ChatMessageList>
-      {messages.map((message) => {
-        const variant = message.sender === "user" ? "sent" : "received";
-        return (
-          <ChatBubble key={message.id} variant={variant}>
-            <ChatBubbleAvatar fallback={variant === "sent" ? "US" : "AI"} />
-            <ChatBubbleMessage isLoading={message.isLoading}>
-              {message.message}
-            </ChatBubbleMessage>
-            {/* Action Icons */}
-            {/* <ChatBubbleActionWrapper>
-              
-                <ChatBubbleAction
-                  className="size-7"
-               
-                  icon={<ArrowRight className="size-4" />}
-                  onClick={() =>
-                    console.log(
-                      "Action " 
-                    )
-                  }
-                />
-       
-            </ChatBubbleActionWrapper> */}
-          </ChatBubble>
-        );
-      })}
-    </ChatMessageList>
+    <div className="relative min-h-screen w-full h-full">
+     <BackgroundGlow />
+      <MaxWidthWrapper className="py-10 bg-white w-full flex  flex-col items-center justify-center relative">
+     
+      <div className="relative w-full max-w-2xl rounded-3xl h-[80vh] md:pb-20 p-0 pb-10 md:shadow-2xl md:px-10 z-20 flex flex-col">
+        <h2 className="text-3xl font-bold text-center text-primary  mb-5">Chat Room</h2>
+        <ChatMessageList className="flex-grow   overflow-y-auto">
+          {messages.map((message) => {
+            const variant = message.sender === "user" ? "sent" : "received";
+            return (
+              <ChatBubble key={message.id} variant={variant}>
+                <ChatBubbleAvatar fallback={variant === "sent" ? "US" : "AI"} />
+                <ChatBubbleMessage className="text-sm">{message.message}</ChatBubbleMessage>
+                <ChatBubbleActionWrapper>
+                  {/* <ChatBubbleAction
+                    className="size-7"
+                    icon={<ArrowRight className="size-4" />}
+                    onClick={() => console.log("Action Clicked")}
+                  /> */}
+                </ChatBubbleActionWrapper>
+              </ChatBubble>
+            );
+          })}
+        </ChatMessageList>
+      </div>
+        <div className="flex z-20 w-full relative py-5  max-w-2xl mt-4">
+          <ChatInput
+            className="w-full !bg-white/70 "
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+          />
+        </div>
+    </MaxWidthWrapper>
+    </div>
+  
   );
 };
 
-export default Chat;
+export default ChatRoom;

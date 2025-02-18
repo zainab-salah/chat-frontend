@@ -7,7 +7,7 @@ import { Button, ButtonProps } from "../button";
 
 
 const chatBubbleVariant = cva(
-  "flex gap-2 max-w-[60%] items-end relative group",
+  "flex gap-2 md:max-w-[60%] w-[90%] items-end relative group",
   {
     variants: {
       variant: {
@@ -107,7 +107,7 @@ const ChatBubbleMessage = React.forwardRef<
     <div
       className={cn(
         chatBubbleMessageVariants({ variant, layout, className }),
-        "break-words max-w-full whitespace-pre-wrap",
+        "break-words max-w-full",
       )}
       ref={ref}
       {...props}
