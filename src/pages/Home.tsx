@@ -11,7 +11,8 @@ export default function Login() {
       <div className="flex flex-col md:flex-row items-center md:justify-between  rounded-3xl h-full p-5 md:shadow-2xl w-full">
         <div className="  relative z-20 md:p-8 w-full md:min-h-auto min-h-screen md:h-auto sm:max-w-[60%] ">
           <h1 className="text-3xl font-bold text-start text-primary mb-4">
-            Welcome <span className="text-secondary">✌️</span>
+            Welcome
+             {/* <span className="text-secondary">✌️</span> */}
           </h1>
           <p className="text-start text-sm text-gray-600 mb-6">
             Fill in the details to get started with the best chat app!

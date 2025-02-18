@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const LoginForm = () => {
     const { login } = useAuth();
@@ -11,13 +12,23 @@ const LoginForm = () => {
       handleSubmit,
       formState: { errors },
     } = useForm<User>();
-  
+    const { toast } = useToast()
     const onSubmit = async (data: User) => {
       try {
         await login(data.username, data.password);
         console.log("Login successful!");
+        toast({
+            title: "Login successful!",
+            description: "Create a new chat room or join an existing one.",
+            variant: "success",
+          })
       } catch (error) {
         console.log(error);
+        toast({
+            title: "Error",
+            description: "Invalid username or password",
+            variant: "destructive",
+          })
       }
     };
   return (
