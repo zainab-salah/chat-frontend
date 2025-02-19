@@ -1,6 +1,5 @@
 import useAuth from "@/hooks/useAuth";
 import MaxWidthWrapper from "./MaxWidthWrapper";
-import { Avatar } from "./ui/avatar";
 import { Button } from "./ui/button";
 
 const Navbar = () => {
@@ -10,7 +9,7 @@ const Navbar = () => {
     <nav  >
       <MaxWidthWrapper className="container flex justify-between items-center py-4 relative z-30">
         <div className="flex items-center">
-          <Avatar />
+          <img src="/chaticon.png" alt="Chat App Logo" className="h-8 w-8 md:10 md:10" />
           <h1 className="text-xl font-bold ml-2">Chat App</h1>
         </div>
         <div>

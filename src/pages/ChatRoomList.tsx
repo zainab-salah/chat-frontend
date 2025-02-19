@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import useAuth from "@/hooks/useAuth";
 import { cn, colors } from "@/lib/utils";
 import { api } from "@/services/api";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChatRoom } from "@/types";
@@ -140,7 +140,7 @@ const ChatRooms: React.FC = () => {
                       )}
                       onClick={() => handleDelete(room.id)}
                     >
-                      {}
+                      <X className="text-white" />
                     </div>
                 </li>
               );
