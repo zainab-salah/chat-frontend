@@ -16,6 +16,7 @@ export interface User {
     id: number;
     name: string;
     created_at: string;
+    creator : string;
   }
   
   export interface WebSocketMessage {
@@ -31,6 +32,6 @@ export interface User {
     user: string;
     content: string;
     timestamp: string;
-    isTemp?: boolean;
+ 
   }
   

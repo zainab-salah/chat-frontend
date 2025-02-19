@@ -7,7 +7,7 @@ const Navbar = () => {
   const { auth,logout } = useAuth();
 
   return (
-    <nav>
+    <nav  >
       <MaxWidthWrapper className="container flex justify-between items-center py-4 relative z-30">
         <div className="flex items-center">
           <Avatar />

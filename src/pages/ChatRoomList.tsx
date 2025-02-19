@@ -88,6 +88,7 @@ const ChatRooms: React.FC = () => {
   const handleDelete = (id: number) => {
     deleteRoomMutation.mutate(id);
   };
+  console.log(chatRooms)
   return (
     <MaxWidthWrapper className="min-h-screen w-full h-full !overflow-hidden p-5 flex items-center justify-center">
       <BackgroundGlow />
@@ -134,7 +135,8 @@ const ChatRooms: React.FC = () => {
                       className={cn(
                         "w-6 h-6 rounded-full",
                         colors[room.id % colors.length],
-                        "group-hover:opacity-80"
+                        "group-hover:opacity-80",
+                        auth?.user !== room.creator && "hidden"
                       )}
                       onClick={() => handleDelete(room.id)}
                     >

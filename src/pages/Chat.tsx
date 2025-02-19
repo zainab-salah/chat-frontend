@@ -134,7 +134,11 @@ const ChatRoom = () => {
               className="cursor-pointer absolute left-5 top-5"
               onClick={() => history.back()}
             />
-            {roomName} Chat Room
+            {roomName} 
+            <span className="text-sm text-gray-400 font-thin block">
+
+            Chat Room
+            </span>
           </h2>
           <ChatMessageList className="flex-grow overflow-y-auto">
             <AnimatePresence initial={false}>
