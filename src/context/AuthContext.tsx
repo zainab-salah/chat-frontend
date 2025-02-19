@@ -1,87 +1,87 @@
-// import { setAuthToken } from "@/services/api";
-// import React, { createContext, useState, ReactNode } from "react";
+import { createContext, useState, useEffect, ReactNode } from "react";
+import { jwtDecode } from 'jwt-decode';
  
-
-// interface AuthContextType {
-//   accessToken: string | null;
-//   login: (username: string, password: string) => Promise<void>;
-//   logout: () => void;
-//   refreshAccessToken: () => Promise<void>;
-// }
-
-
-// export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-//   const [accessToken, setAccessToken] = useState<string | null>(null);
-//   const apiUrl = import.meta.env.VITE_API_URL;
-  
-//   const login = async (username: string, password: string) => {
-//     try {
-//       const response = await fetch(`${apiUrl}/login/`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ username, password }),
-//       });
-  
-//       if (!response.ok) throw new Error("Login failed");
-  
-//       const data = await response.json();
-//       console.log("Login successful, setting token:", data.access);
-//       setAccessToken(data.access);
-//       setAuthToken(data.access);
-//     } catch (error) {
-//       console.error("Login failed:", error);
-//       throw error;
-//     }
-//   };
-  
-
-//   const refreshAccessToken = async () => {
-//     try {
-//       const response = await fetch(`${apiUrl}/token/refresh/`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ refresh: localStorage.getItem("refreshToken") }),
-//       });
-
-//       if (!response.ok) throw new Error("Token refresh failed");
-
-//       const data = await response.json();
-//       setAccessToken(data.access);
-//       setAuthToken(data.access);
-//     } catch (error) {
-//       console.error("Token refresh failed:", error);
-//       logout();
-//     }
-//   };
-
-//   const logout = () => {
-//     setAccessToken(null);
-//     setAuthToken(null);  
-//   };
-
-//   return (
-//     <AuthContext.Provider value={{ accessToken, login, logout, refreshAccessToken }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-import { createContext, useState } from "react";
-
-const AuthContext = createContext({});
-
-export const AuthProvider = ({ children }:
-    { children: React.ReactNode }
-) => {
-    const [auth, setAuth] = useState({});
-console.log(auth)
-    return (
-        <AuthContext.Provider value={{ auth, setAuth }}>
-            {children}
-        </AuthContext.Provider>
-    )
+interface DecodedToken {
+  exp: number;
+  [key: string]: unknown;   
 }
+
+interface AuthState {
+  accessToken: string;
+  user: string;
+  userId: string;
+}
+
+interface AuthContextType {
+  auth: AuthState;
+  setAuth: React.Dispatch<React.SetStateAction<AuthState>>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  auth: {
+    accessToken: "",
+    user: "",
+    userId: "",
+  },
+  setAuth: () => {},   
+  logout: () => {},  
+});
+
+const isTokenExpired = (token: string) => {
+  try {
+    const decoded: DecodedToken = jwtDecode(token);   
+    return decoded.exp * 1000 < Date.now();  
+  } catch (error) {
+    return true;  
+  }
+};
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [auth, setAuth] = useState<AuthState>(() => {
+    const storedToken = localStorage.getItem("accessToken") || "";
+    const storedUser = localStorage.getItem("user") || "";
+    const storedUserId = localStorage.getItem("userId") || "";
+
+    // Check if token is expired on initial load
+    if (storedToken && isTokenExpired(storedToken)) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("userId");
+      return { accessToken: "", user: "", userId: "" };
+    }
+
+    return {
+      accessToken: storedToken,
+      user: storedUser,
+      userId: storedUserId,
+    };
+  });
+
+  useEffect(() => {
+    if (auth.accessToken) {
+      localStorage.setItem("accessToken", auth.accessToken);
+      localStorage.setItem("user", auth.user);
+      localStorage.setItem("userId", auth.userId);
+    } else {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("userId");
+    }
+  }, [auth]);
+
+  const logout = () => {
+    setAuth({ accessToken: "", user: "", userId: "" });
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+  };
+
+  return (
+    <AuthContext.Provider value={{ auth, setAuth, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
 export default AuthContext;

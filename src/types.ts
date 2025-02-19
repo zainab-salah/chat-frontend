@@ -26,10 +26,11 @@ export interface User {
   }
   
   export interface Message {
-    id: number;
-    user: string;
+    id: string;
     chatroom: string;
+    user: string;
     content: string;
-    timestamp?: Date;
+    timestamp: string;
+    isTemp?: boolean;
   }
   

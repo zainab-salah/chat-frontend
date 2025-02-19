@@ -1,5 +1,6 @@
+import MaxWidthWrapper from "./MaxWidthWrapper"
 
-import MaxWidthWrapper from "./MaxWidthWrapper.tsx"
+ 
 
  
 

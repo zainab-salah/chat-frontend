@@ -1,28 +1,40 @@
- 
-import { api } from '@/services/api';
-import useAuth from './useAuth';
+import { api } from "@/services/api";
+import useAuth from "./useAuth";
 
 interface RefreshResponse {
-    access: string;
-    refresh: string;
+  access: string;
 }
 
-const useRefreshToken = () => {
-    const {auth, setAuth } = useAuth();
+export const useRefreshToken = () => {
+  const { setAuth } = useAuth();
 
-    const refresh = async (): Promise<string> => {
-        const response = await api.post<RefreshResponse>('/refresh', {
-            refresh: auth.accessToken 
-        }, { withCredentials: true });
-        setAuth(prev => {
-            console.log(JSON.stringify(prev));
-            console.log(response.data);
-            return { ...prev, accessToken: response.data.access };
-        });
-        return response.data.access;
-    };
-    
-    return refresh;
+  const refresh = async (): Promise<string> => {
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    if (!refreshToken) {
+      console.error("No refresh token found");
+      return "";
+    }
+
+    try {
+      const response = await api.post<RefreshResponse>(
+        "/refresh/",
+        { refresh: refreshToken },
+        { withCredentials: true }
+      );
+
+      const newAccessToken = response.data.access;
+      
+      setAuth((prev) => ({ ...prev, accessToken: newAccessToken }));
+
+      localStorage.setItem("accessToken", newAccessToken);
+
+      return newAccessToken;
+    } catch (error) {
+      console.error("Refresh failed:", error);
+      return "";
+    }
+  };
+
+  return refresh;
 };
-
-export default useRefreshToken;
