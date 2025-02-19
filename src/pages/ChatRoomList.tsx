@@ -11,9 +11,10 @@ import { Plus, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChatRoom } from "@/types";
-import { useForm } from "react-hook-form";
+import {   useForm } from "react-hook-form";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const ChatRooms: React.FC = () => {
   const { auth } = useAuth();
@@ -23,6 +24,7 @@ const ChatRooms: React.FC = () => {
     handleSubmit,
     reset,
     formState: { errors },
+ 
   } = useForm<{ name: string }>();
 
   const navigate = useNavigate();
@@ -45,7 +47,7 @@ const ChatRooms: React.FC = () => {
     enabled: !!auth?.accessToken,
     retry: false,
   });
-
+const {toast} = useToast();
   useEffect(() => {
     if (isError) {
       navigate("/");
@@ -70,6 +72,13 @@ const ChatRooms: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["chatrooms"] });
     },
     onError: (error) => {
+      toast({
+        title: "This Name is already taken",
+ 
+        description: "Please try another name",
+     variant:"destructive"
+      })
+      reset();
       console.error("Error creating room:", error);
     },
   });
@@ -83,8 +92,14 @@ const ChatRooms: React.FC = () => {
     },
     onSuccess: () => {
       refetch();
+      reset();
     },
+    onError: (error) => {
+      
+      console.error("Error deleting room:", error);
+    }
   });
+  console.log(errors)
   const handleDelete = (id: number) => {
     deleteRoomMutation.mutate(id);
   };
@@ -150,7 +165,7 @@ const ChatRooms: React.FC = () => {
 
         <form
           onSubmit={handleSubmit((data) => createRoomMutation.mutate(data))}
-          className="flex space-x-2 mt-8"
+          className="flex items-center space-x-2 mt-8"
         >
           <Input
             type="text"
@@ -162,14 +177,15 @@ const ChatRooms: React.FC = () => {
           />
           <Button
             type="submit"
-            className="bg-primary text-white p-2 md:w-1/3 cursor-pointer w-10 rounded-full"
+            className="bg-primary text-white p-2 w-7 h-7 cursor-pointer   rounded-full"
             disabled={createRoomMutation.isPending}
           >
             {createRoomMutation.isPending ? "..." : <Plus size={30} />}
           </Button>
         </form>
 
-        {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+        {errors.name && <p className="text-red-500 ps-2 pt-1 text-sm">{errors.name.message}</p>}
+
       </AnimatedDiv>
     </MaxWidthWrapper>
   );

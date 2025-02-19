@@ -46,7 +46,7 @@ const ChatRoom = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Initialize messages from the query
+
   useEffect(() => {
     if (Array.isArray(oldMessages) && oldMessages !== messages) {
       setMessages(oldMessages);
@@ -54,7 +54,7 @@ const ChatRoom = () => {
   }, [oldMessages, messages]);
   
 
-  // WebSocket connection
+
   useEffect(() => {
     const handleMessage = (message: Message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
@@ -84,14 +84,16 @@ const ChatRoom = () => {
             },
           }
         );
-
+  
         websocketService.sendMessage(newMessage.trim());
+        refetch();   
         setNewMessage("");
       } catch (error) {
         console.error("Failed to send message:", error);
       }
     }
   };
+  
  
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -127,7 +129,7 @@ const ChatRoom = () => {
     <div className="relative min-h-screen w-full h-full">
       <BackgroundGlow />
       <MaxWidthWrapper className="py-10 bg-white w-full flex flex-col items-center justify-center relative">
-        <div className="relative w-full max-w-2xl rounded-3xl h-[80vh] md:pb-20 p-0 pb-10 md:shadow-2xl md:px-10 z-20 flex flex-col">
+        <div className="relative w-full max-w-2xl rounded-3xl h-[80vh] md:pb-28 p-0 pb-10 md:shadow-2xl md:px-10 z-20 flex flex-col">
           <h2 className="text-3xl   ps-5  pt-5 capitalize font-bold text-center text-primary mb-5">
             <ChevronLeft
               size={40}
