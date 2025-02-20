@@ -24,7 +24,6 @@ const ChatRoom = () => {
   const { auth } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
- 
 
   const {
     data: oldMessages = [],
@@ -41,33 +40,55 @@ const ChatRoom = () => {
       });
       return response.data.messages;
     },
-    
+
     enabled: !!auth?.accessToken && !!roomId,
     refetchOnWindowFocus: false,
   });
 
-
   useEffect(() => {
-    if (Array.isArray(oldMessages) && oldMessages !== messages) {
-      setMessages(oldMessages);
-    }
-  }, [oldMessages, messages]);
-  
+    if (Array.isArray(oldMessages) && oldMessages.length > 0) {
+      setMessages((prevMessages) => {
+        const uniqueMessages = [...prevMessages, ...oldMessages].reduce(
+          (acc, message) => {
+            acc[message.id] = message;
 
+            return acc;
+          },
+          {} as Record<string, Message>
+        );
+        return Object.values(uniqueMessages);
+      });
+    }
+  }, [oldMessages]);
 
   useEffect(() => {
     const handleMessage = (message: Message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+      console.log("🆕 New message received:", message);
+
+      setMessages((prevMessages) => {
+        if (prevMessages.some((msg) => msg.id === message.id)) {
+          return prevMessages;
+        }
+
+        const updatedMessages = [...prevMessages, message];
+        console.log("🔄 UI Updated, messages count:", updatedMessages.length);
+        return updatedMessages;
+      });
     };
 
     if (roomId && auth?.accessToken) {
+      console.log("🔌 Connecting WebSocket...");
       websocketService.connect(roomId, auth.accessToken, handleMessage);
     }
 
     return () => {
-      websocketService.disconnect();  
+      websocketService.disconnect();
     };
   }, [roomId, auth?.accessToken]);
+
+  useEffect(() => {
+    console.log("🔄 UI Updated, messages count:", messages.length);
+  }, [messages]);
 
   const sendMessage = async () => {
     if (newMessage.trim() !== "" && roomId) {
@@ -77,24 +98,27 @@ const ChatRoom = () => {
           {
             chatroom_id: roomId,
             content: newMessage.trim(),
+            user_id: auth?.userId,
+            username: auth?.user,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${auth?.accessToken}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${auth?.accessToken}` } }
         );
-  
-        websocketService.sendMessage(newMessage.trim());
-        refetch();   
-        setNewMessage("");
+
+        // No need to update UI manually, WebSocket will handle it
+        websocketService.sendMessage(
+          roomId,
+          newMessage.trim(),
+          auth?.userId,
+          auth?.user
+        );
+
+        setNewMessage(""); // Clear input after sending
       } catch (error) {
         console.error("Failed to send message:", error);
       }
     }
   };
-  
- 
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -113,18 +137,19 @@ const ChatRoom = () => {
       refetch();
     },
   });
-  const handleDelete = (id:string) => {
+  const handleDelete = (id: string) => {
     deleteMessageMutation.mutate(id);
   };
 
   if (isLoading) {
-    return <Loader2 className="animate-spin h-10 w-10 mx-auto p-6 text-primary" />;
+    return (
+      <Loader2 className="animate-spin h-10 w-10 mx-auto p-6 text-primary" />
+    );
   }
 
   if (isError || !roomId) {
     return <p className="text-red-500 text-center">Failed to load messages</p>;
   }
-
   return (
     <div className="relative min-h-screen w-full h-full">
       <BackgroundGlow />
@@ -136,23 +161,24 @@ const ChatRoom = () => {
               className="cursor-pointer absolute left-5 top-5"
               onClick={() => history.back()}
             />
-            {roomName} 
+            {roomName}
             <span className="text-sm text-gray-400 font-thin block">
-
-            Chat Room
+              Chat Room
             </span>
           </h2>
           <ChatMessageList className="flex-grow overflow-y-auto">
             <AnimatePresence initial={false}>
-              {messages.map((message) => {
-                const isSentByUser =
-                  String(message.user) === String(auth.userId);
+              {/* key={message.id || fallback-key-${index}}
+              message={message}
+              isSentByUser={isSentByUser}
+              handleDelete={() => handleDelete(message.id)} */}
+              {messages.map((message, index) => {
                 return (
                   <MessageItem
-                    key={message.id}
+                    key={message.id || `fallback-key-${index}`}
                     message={message}
-                    isSentByUser={isSentByUser}
-                    handleDelete={()=>handleDelete(message.id)}
+                    LoggedUser={auth.userId}
+                    handleDelete={() => handleDelete(message.id)}
                   />
                 );
               })}

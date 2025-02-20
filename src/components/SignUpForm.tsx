@@ -33,7 +33,7 @@ const SignUpForm = () => {
       const userId = response?.data?.user?.id;
       setAuth({ accessToken, user: data.username, userId: userId });
 
-      // Store both tokens
+    
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", data.username);
