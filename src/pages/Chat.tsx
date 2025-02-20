@@ -62,8 +62,7 @@ const ChatRoom = () => {
   }, [oldMessages]);
 
   useEffect(() => {
-    const handleMessage = (message: Message) => {
-      console.log("🆕 New message received:", message);
+    const handleMessage = (message: Message) => { 
 
       setMessages((prevMessages) => {
         if (prevMessages.some((msg) => msg.id === message.id)) {
@@ -71,7 +70,6 @@ const ChatRoom = () => {
         }
 
         const updatedMessages = [...prevMessages, message];
-        console.log("🔄 UI Updated, messages count:", updatedMessages.length);
         return updatedMessages;
       });
     };
@@ -86,9 +84,7 @@ const ChatRoom = () => {
     };
   }, [roomId, auth?.accessToken]);
 
-  useEffect(() => {
-    console.log("🔄 UI Updated, messages count:", messages.length);
-  }, [messages]);
+
 
   const sendMessage = async () => {
     if (newMessage.trim() !== "" && roomId) {
@@ -104,7 +100,7 @@ const ChatRoom = () => {
           { headers: { Authorization: `Bearer ${auth?.accessToken}` } }
         );
 
-        // No need to update UI manually, WebSocket will handle it
+      
         websocketService.sendMessage(
           roomId,
           newMessage.trim(),
@@ -112,7 +108,7 @@ const ChatRoom = () => {
           auth?.user
         );
 
-        setNewMessage(""); // Clear input after sending
+        setNewMessage("");  
       } catch (error) {
         console.error("Failed to send message:", error);
       }

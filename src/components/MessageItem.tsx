@@ -34,8 +34,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
   }, [message.user, LoggedUser]);
 
   const variant = isSentByUser ? "sent" : "received";
-console.log(message.user)
-console.log(LoggedUser)
+ 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
