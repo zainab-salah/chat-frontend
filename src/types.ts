@@ -32,6 +32,7 @@ export interface User {
     user: string;
     content: string;
     timestamp: string;
- 
+    user_id?: string;
+    username?: string;
   }
   

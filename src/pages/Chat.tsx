@@ -1,23 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { ChatInput } from "@/components/ui/chat/chat-input";
-import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
+
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import BackgroundGlow from "@/components/BackgroundGlow";
 import { websocketService } from "@/services/websocket";
 import { Message } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/services/api";
-import MessageItem from "@/components/MessageItem";
-import { AnimatePresence } from "framer-motion";
-import { ChevronLeft, Loader2 } from "lucide-react";
-
-const ChatRoom = () => {
-  const { roomId } = useParams();
-
+import ChatRoomHeader from "@/components/ChatRoom/ChatRoomHeader";
+import ChatRoomMessages from "@/components/ChatRoom/ChatRoomMessages";
+import ChatRoomInput from "@/components/ChatRoom/ChatRoomInput";
+import { Loader2 } from "lucide-react";
+const ChatRoom: React.FC = () => {
+  const { roomId } = useParams<{ roomId: string }>();
   const location = useLocation();
-
   const searchParams = new URLSearchParams(location.search);
   const roomName = searchParams.get("name");
 
@@ -40,7 +37,6 @@ const ChatRoom = () => {
       });
       return response.data.messages;
     },
-
     enabled: !!auth?.accessToken && !!roomId,
     refetchOnWindowFocus: false,
   });
@@ -51,7 +47,6 @@ const ChatRoom = () => {
         const uniqueMessages = [...prevMessages, ...oldMessages].reduce(
           (acc, message) => {
             acc[message.id] = message;
-
             return acc;
           },
           {} as Record<string, Message>
@@ -62,20 +57,16 @@ const ChatRoom = () => {
   }, [oldMessages]);
 
   useEffect(() => {
-    const handleMessage = (message: Message) => { 
-
+    const handleMessage = (message: Message) => {
       setMessages((prevMessages) => {
         if (prevMessages.some((msg) => msg.id === message.id)) {
           return prevMessages;
         }
-
-        const updatedMessages = [...prevMessages, message];
-        return updatedMessages;
+        return [...prevMessages, message];
       });
     };
 
     if (roomId && auth?.accessToken) {
-      console.log("🔌 Connecting WebSocket...");
       websocketService.connect(roomId, auth.accessToken, handleMessage);
     }
 
@@ -83,8 +74,6 @@ const ChatRoom = () => {
       websocketService.disconnect();
     };
   }, [roomId, auth?.accessToken]);
-
-
 
   const sendMessage = async () => {
     if (newMessage.trim() !== "" && roomId) {
@@ -96,19 +85,18 @@ const ChatRoom = () => {
             content: newMessage.trim(),
             user_id: auth?.userId,
             username: auth?.user,
+            timestamp: new Date().toISOString(),
           },
           { headers: { Authorization: `Bearer ${auth?.accessToken}` } }
         );
-
-      
         websocketService.sendMessage(
           roomId,
           newMessage.trim(),
           auth?.userId,
-          auth?.user
+          auth?.user,
+          new Date().toISOString()
         );
-
-        setNewMessage("");  
+        setNewMessage("");
       } catch (error) {
         console.error("Failed to send message:", error);
       }
@@ -131,12 +119,17 @@ const ChatRoom = () => {
     },
     onSuccess: () => {
       refetch();
+      
     },
   });
-  const handleDelete = (id: string) => {
-    deleteMessageMutation.mutate(id);
-  };
 
+  const handleDelete = (id: string) => {
+    deleteMessageMutation.mutate(id, {
+      onSuccess: () => {
+        setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== id));
+      },
+    });
+  };
   if (isLoading) {
     return (
       <Loader2 className="animate-spin h-10 w-10 mx-auto p-6 text-primary" />
@@ -147,51 +140,23 @@ const ChatRoom = () => {
     return <p className="text-red-500 text-center">Failed to load messages</p>;
   }
   return (
-    <div className="relative min-h-screen w-full h-full">
+    <div className="relative w-full h-full">
       <BackgroundGlow />
       <MaxWidthWrapper className="py-10 bg-white w-full flex flex-col items-center justify-center relative">
-        <div className="relative w-full max-w-2xl rounded-3xl h-[80vh] md:pb-28 p-0 pb-10 md:shadow-2xl md:px-10 z-20 flex flex-col">
-          <h2 className="text-3xl   ps-5  pt-5 capitalize font-bold text-center text-primary mb-5">
-            <ChevronLeft
-              size={40}
-              className="cursor-pointer absolute left-5 top-5"
-              onClick={() => history.back()}
-            />
-            {roomName}
-            <span className="text-sm text-gray-400 font-thin block">
-              Chat Room
-            </span>
-          </h2>
-          <ChatMessageList className="flex-grow overflow-y-auto">
-            <AnimatePresence initial={false}>
-              {/* key={message.id || fallback-key-${index}}
-              message={message}
-              isSentByUser={isSentByUser}
-              handleDelete={() => handleDelete(message.id)} */}
-              {messages.map((message, index) => {
-                return (
-                  <MessageItem
-                    key={message.id || `fallback-key-${index}`}
-                    message={message}
-                    LoggedUser={auth.userId}
-                    handleDelete={() => handleDelete(message.id)}
-                  />
-                );
-              })}
-            </AnimatePresence>
-          </ChatMessageList>
-        </div>
-
-        <div className="flex z-20 w-full relative py-5 max-w-2xl mt-4">
-          <ChatInput
-            className="w-full !bg-white/70"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
-            disabled={!roomId}
+        <div className="relative w-full max-w-2xl rounded-3xl min-h-[60vh] md:pb-28 p-0 pb-10 md:shadow-2xl md:px-10 z-20 flex flex-col">
+          <ChatRoomHeader roomName={roomName} />
+          <ChatRoomMessages
+            handleDelete={handleDelete}
+            messages={messages}
+            auth={auth}
           />
         </div>
+        <ChatRoomInput
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+          handleKeyDown={handleKeyDown}
+          roomId={roomId}
+        />
       </MaxWidthWrapper>
     </div>
   );

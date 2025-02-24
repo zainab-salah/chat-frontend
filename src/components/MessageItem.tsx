@@ -53,7 +53,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
         {isSentByUser && (
           <ChatBubbleActionWrapper>
             <ChatBubbleAction
-              className="size-7 cursor-pointer hover:bg-red-400"
+              className="size-7 cursor-pointer   hover:bg-red-400"
               icon={<Trash className="size-4" />}
               onClick={handleDelete}
             />

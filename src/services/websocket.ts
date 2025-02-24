@@ -1,4 +1,7 @@
 import { Message } from "@/types";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
 class WebSocketService {
   private socket: WebSocket | null = null;
@@ -22,6 +25,8 @@ class WebSocketService {
     this.socket.onopen = () => {
       console.log("✅ WebSocket connection established.");
     };
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
 
     this.socket.onmessage = (event) => {
       console.log("📩 WebSocket message received:", event.data);
@@ -31,9 +36,9 @@ class WebSocketService {
           onMessage({
             id: data.id,
             chatroom: data.room_id,
-            user: data.userId,
+            user: data.user_id,
             content: data.message,
-            timestamp: new Date(data.date).toISOString(),
+            timestamp: dayjs.utc(data.date).local().format(), 
           });
         } else {
           console.warn("⚠️ Unexpected WebSocket message format:", data);
@@ -42,13 +47,12 @@ class WebSocketService {
         console.error("❌ Error parsing WebSocket message:", error);
       }
     };
-
     this.socket.onclose = (event) => {
       console.warn(
         `🔴 WebSocket closed: Code ${event.code}, Reason: ${event.reason}`
       );
 
-      // Auto-reconnect if disconnected
+      // Auto-reconnect  
       if (!event.wasClean) {
         console.log("🌀 Attempting to reconnect WebSocket...");
         setTimeout(() => this.connect(roomId, token, onMessage), 3000);
@@ -59,17 +63,36 @@ class WebSocketService {
       console.error("❌ WebSocket error:", error);
     };
   }
-  sendMessage(room_id: string, message: string, userId: string, username: string) {
+
+  sendMessage(
+    room_id: string,
+    message: string,
+    userId: string,
+    username: string,
+    timestamp: string
+  ) {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      console.log("📤 Sending WebSocket message:", { room_id, message, userId, username });
-  
-      this.socket.send(JSON.stringify({ room_id, message, user_id: userId, username })); 
+      console.log("📤 Sending WebSocket message:", {
+        room_id,
+        message,
+        userId,
+        username,
+        timestamp,
+      });
+
+      this.socket.send(
+        JSON.stringify({
+          room_id,
+          message,
+          user_id: userId,
+          user: username,
+          timestamp: new Date().toISOString(),
+        })
+      );
     } else {
       console.warn("⚠️ WebSocket is not open, message not sent.");
     }
   }
-  
-  
 
   disconnect() {
     if (this.socket) {
